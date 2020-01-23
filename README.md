@@ -103,7 +103,10 @@ You can also play with the hyperparameters using arguments. Some of the more int
     - _CUB Image-Cpation_: Image scaling factor 32/64*64*3 = 0.0026
 - **`--latent-dimension`**: Latent dimension
 
-You can also load from pre-trained models by specifying the path to the model folder, for example `python --model mnist_svhn --pre-trained path/to/model/folder/`.
+You can also load from pre-trained models by specifying the path to the model folder, for example `python --model mnist_svhn --pre-trained path/to/model/folder/`. See following for the flag we used for these pretrained models:
+- **MNIST-SVHN**: `K=50, batch_size=256, cuda=True, epochs=50, experiment='mnist_svhn', latent_dim=20, learn_prior=True, llik_scaling=1, logp=False, looser=True, model='mnist_svhn', no_analytics=False, no_cuda=False, num_hidden_layers=1, obj='dreg', pre_trained=None, print_freq=0, projection=''`
+- **CUB Image-Caption (feature)**: `K=50, batch_size=64, cuda=True, epochs=50, experiment='cubISft', latent_dim=64, learn_prior=True, llik_scaling=0.002, logp=False, looser=True, lr=0.0001, model='cubISft', no_analytics=True, no_cuda=False, num_hidden_layers=1, obj='dreg', std=0.0001`
+- **CUB Image-Caption (raw images)**: `K=50, batch_size=64, cuda=True, epochs=200, experiment='cubIS', latent_dim=128, learn_prior=True, llik_scaling=0.0, logp=False, looser=True, lr=0.0001, model='cubIS', no_analytics=True, no_cuda=False, num_hidden_layers=1, obj='dreg', std=0.001`
 
 ### Analysing
 We offer tools to reproduce the quantitative results in our paper in `src/report`. To run any of the provided script, `cd` into `src`, and
