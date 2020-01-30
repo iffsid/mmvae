@@ -23,7 +23,7 @@ from utils import Logger, Timer
 
 torch.backends.cudnn.benchmark = True
 parser = argparse.ArgumentParser(description='Analysing MM-DGM results')
-parser.add_argument('--save-dir', type=str, default="/home/jimmy/projects/release-mmdgm/experiments/mnist-svhn/2020-01-29T14:33:41.666626gkj5fobn",
+parser.add_argument('--save-dir', type=str, default="",
                     metavar='N', help='save directory of results')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA use')
@@ -145,7 +145,7 @@ def _maybe_train_or_load_digit_classifier_img(path, epochs):
         print('The classifier correctly classified {} out of {} examples. Accuracy: '
               '{:.2f}%'.format(correct, total, correct / total * 100))
 
-        torch.save(classifier, path.format(option))
+        torch.save(classifier.state_dict(), path.format(option))
 
     mnist_net, svhn_net = MNIST_Classifier().to(device), SVHN_Classifier().to(device)
     mnist_net.load_state_dict(torch.load(path.format('mnist')))
