@@ -13,7 +13,7 @@ import torch.optim as optim
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) # for system user
+sys.path.insert(0, parentdir) # for bash user
 os.chdir(parentdir) # for pycharm user
 
 import models
@@ -23,7 +23,7 @@ from utils import Logger, Timer
 
 torch.backends.cudnn.benchmark = True
 parser = argparse.ArgumentParser(description='Analysing MM-DGM results')
-parser.add_argument('--save-dir', type=str, default=".",
+parser.add_argument('--save-dir', type=str, default="/home/jimmy/projects/release-mmdgm/experiments/mnist-svhn/2020-01-29T14:33:41.666626gkj5fobn",
                     metavar='N', help='save directory of results')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA use')
@@ -100,12 +100,62 @@ def classify_latents(epochs, option):
           '{:.2f}%'.format(correct, total, correct / total * 100))
 
 
-def cross_coherence():
-    model.eval()
-    mnist_net, svhn_net = MNIST_Classifier().to(device), SVHN_Classifier().to(device)
-    mnist_net.load_state_dict(torch.load('../data/mnist_model.pt'))
-    svhn_net.load_state_dict(torch.load('../data/svhn_model.pt'))
+def _maybe_train_or_load_digit_classifier_img(path, epochs):
 
+    options = [o for o in ['mnist', 'svhn'] if not os.path.exists(path.format(o))]
+
+    for option in options:
+        print("Cannot find trained {} digit classifier in {}, training...".
+              format(option, path.format(option)))
+        classifier = globals()['{}_Classifier'.format(option.upper())]().to(device)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(classifier.parameters(), lr=0.001)
+        for epoch in range(epochs):  # loop over the dataset multiple times
+            running_loss = 0.0
+            total_iters = len(train_loader)
+            print('\n====> Epoch: {:03d} '.format(epoch))
+            for i, data in enumerate(train_loader):
+                # get the inputs
+                x, targets = unpack_data_mlp(data, option)
+                x, targets = x.to(device), targets.to(device)
+
+                optimizer.zero_grad()
+                outputs = classifier(x)
+                loss = criterion(outputs, targets)
+                loss.backward()
+                optimizer.step()
+                # print statistics
+                running_loss += loss.item()
+                if (i + 1) % 1000 == 0:
+                    print('iteration {:04d}/{:d}: loss: {:6.3f}'.format(i + 1, total_iters, running_loss / 1000))
+                    running_loss = 0.0
+        print('Finished Training, calculating test loss...')
+
+        classifier.eval()
+        total = 0
+        correct = 0
+        with torch.no_grad():
+            for i, data in enumerate(test_loader):
+                x, targets = unpack_data_mlp(data, option)
+                x, targets = x.to(device), targets.to(device)
+                outputs = classifier(x)
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+        print('The classifier correctly classified {} out of {} examples. Accuracy: '
+              '{:.2f}%'.format(correct, total, correct / total * 100))
+
+        torch.save(classifier, path.format(option))
+
+    mnist_net, svhn_net = MNIST_Classifier().to(device), SVHN_Classifier().to(device)
+    mnist_net.load_state_dict(torch.load(path.format('mnist')))
+    svhn_net.load_state_dict(torch.load(path.format('svhn')))
+    return mnist_net, svhn_net
+
+def cross_coherence(epochs):
+    model.eval()
+
+    mnist_net, svhn_net = _maybe_train_or_load_digit_classifier_img("../data/{}_model.pt", epochs=epochs)
     mnist_net.eval()
     svhn_net.eval()
 
@@ -170,7 +220,7 @@ def unpack_data_mlp(dataB, option='both'):
 
 
 def unpack_model(option='svhn'):
-    if args.model == 'mnist_svhn':
+    if 'mnist_svhn' in args.model:
         return model.vaes[1] if option == 'svhn' else model.vaes[0]
     else:
         return model
@@ -181,11 +231,12 @@ if __name__ == '__main__':
         print('-' * 25 + 'latent classification accuracy' + '-' * 25)
         print("Calculating latent classification accuracy for single MNIST VAE...")
         classify_latents(epochs=10, option='mnist')
+        #
         print("\n Calculating latent classification accuracy for single SVHN VAE...")
         classify_latents(epochs=10, option='svhn')
-
-        print('\n-' * 45 + 'cross coherence' + '-' * 45)
-        cross_coherence()
-
-        print('\n-' * 45 + 'joint coherence' + '-' * 45)
+        #
+        print('\n' + '-' * 45 + 'cross coherence' + '-' * 45)
+        cross_coherence(epochs=10)
+        #
+        print('\n' + '-' * 45 + 'joint coherence' + '-' * 45)
         joint_coherence()
