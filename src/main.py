@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import sys
+import json
 from collections import defaultdict
 from pathlib import Path
 from tempfile import mkdtemp
@@ -90,6 +91,12 @@ runPath = mkdtemp(prefix=runId, dir=str(experiment_dir))
 sys.stdout = Logger('{}/run.log'.format(runPath))
 print('Expt:', runPath)
 print('RunID:', runId)
+
+# save args to run
+with open('{}/args.json'.format(runPath), 'w') as fp:
+    json.dump(args.__dict__, fp)
+# -- also save object because we want to recover these for other things
+torch.save(args, '{}/args.rar'.format(runPath))
 
 # preparation for training
 optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
