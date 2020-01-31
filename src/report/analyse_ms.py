@@ -30,7 +30,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 cmds = parser.parse_args()
 runPath = cmds.save_dir
 
-sys.stdout = Logger('{}/analyse.log'.format(runPath))
+sys.stdout = Logger('{}/ms_acc.log'.format(runPath))
 args = torch.load(runPath + '/args.rar')
 
 # cuda stuff
@@ -230,13 +230,13 @@ if __name__ == '__main__':
     with Timer('MM-VAE analysis') as t:
         print('-' * 25 + 'latent classification accuracy' + '-' * 25)
         print("Calculating latent classification accuracy for single MNIST VAE...")
-        classify_latents(epochs=10, option='mnist')
-        #
+        classify_latents(epochs=30, option='mnist')
+        # #
         print("\n Calculating latent classification accuracy for single SVHN VAE...")
-        classify_latents(epochs=10, option='svhn')
+        classify_latents(epochs=30, option='svhn')
         #
         print('\n' + '-' * 45 + 'cross coherence' + '-' * 45)
-        cross_coherence(epochs=10)
+        cross_coherence(epochs=30)
         #
         print('\n' + '-' * 45 + 'joint coherence' + '-' * 45)
         joint_coherence()

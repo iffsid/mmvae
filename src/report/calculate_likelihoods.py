@@ -11,23 +11,24 @@ from torchvision.utils import save_image
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+sys.path.insert(0, parentdir) # for bash user
+os.chdir(parentdir) # for pycharm user
 
 import models
 from utils import Logger, Timer, unpack_data, log_mean_exp
 
 torch.backends.cudnn.benchmark = True
 parser = argparse.ArgumentParser(description='Analysing MM-DGM results')
-parser.add_argument('--save-dir', type=str, default="../experiments/pretrain/2019-05-09T22:51:10.258755v9ozxkvt",
+parser.add_argument('--save-dir', type=str, default="",
                     metavar='N', help='save directory of results')
-parser.add_argument('--iwae-samples', type=int, default=500, metavar='I',
+parser.add_argument('--iwae-samples', type=int, default=1000, metavar='I',
                     help='number of samples to estimate marginal log likelihood (default: 1000)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA use')
 cmds = parser.parse_args()
 runPath = cmds.save_dir
 
-sys.stdout = Logger('{}/analyse.log'.format(runPath))
+sys.stdout = Logger('{}/llik.log'.format(runPath))
 args = torch.load(runPath + '/args.rar')
 
 # cuda stuff
