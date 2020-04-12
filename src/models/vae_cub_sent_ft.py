@@ -140,7 +140,7 @@ class CUB_Sentence_ft(VAE):
 
     @property
     def pz_params(self):
-        return self._pz_params[0], F.softplus(self._pz_params[1])
+        return self._pz_params[0], F.softplus(self._pz_params[1]) + Constants.eta
 
     @staticmethod
     def getDataLoaders(batch_size, shuffle=True, device="cuda"):

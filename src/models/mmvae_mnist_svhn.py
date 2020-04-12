@@ -63,14 +63,13 @@ class MNIST_SVHN(MMVAE):
         return train, test
 
     def generate(self, runPath, epoch):
-        N, K = 64, 9
-        samples_list = super(MNIST_SVHN, self).generate(N, K)
+        N = 64
+        samples_list = super(MNIST_SVHN, self).generate(N)
         for i, samples in enumerate(samples_list):
             samples = samples.data.cpu()
             # wrangle things so they come out tiled
-            samples = samples.view(K, N, *samples.size()[1:]).transpose(0, 1)
-            s = [make_grid(t, nrow=int(sqrt(K)), padding=0) for t in samples]
-            save_image(torch.stack(s),
+            samples = samples.view(N, *samples.size()[1:])
+            save_image(samples,
                        '{}/gen_samples_{}_{:03d}.png'.format(runPath, i, epoch),
                        nrow=int(sqrt(N)))
 

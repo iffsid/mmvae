@@ -47,7 +47,7 @@ class CUB_Image_Sentence_ft(MMVAE):
     @property
     def pz_params(self):
         return self._pz_params[0], \
-            F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(1) + Constants.eta
+            F.softplus(self._pz_params[1]) + Constants.eta
 
     def getDataLoaders(self, batch_size, shuffle=True, device='cuda'):
         # load base datasets
@@ -64,15 +64,14 @@ class CUB_Image_Sentence_ft(MMVAE):
         return train_loader, test_loader
 
     def generate(self, runPath, epoch):
-        N, K = 8, 9
-        samples = super(CUB_Image_Sentence_ft, self).generate(N, K)
+        N = 8
+        samples = super(CUB_Image_Sentence_ft, self).generate(N)
         samples[0] = self.vaes[0].unproject(samples[0], search_split='train')
-        images, captions = [sample.data.cpu().view(K, N, *sample.size()[1:]).transpose(0, 1) for sample in samples]
-        captions = [self._sent_preprocess(caption) for caption in captions]
+        images, captions = [sample.data.cpu() for sample in samples]
+        captions = self._sent_preprocess(captions)
         fig = plt.figure(figsize=(8, 6))
         for i, (image, caption) in enumerate(zip(images, captions)):
-            image = make_grid(image, nrow=int(sqrt(K)), padding=0)
-            fig = self._imshow(image, caption[0], i, fig, N)
+            fig = self._imshow(image, caption, i, fig, N)
 
         plt.savefig('{}/gen_samples_{:03d}.png'.format(runPath, epoch))
         plt.close()

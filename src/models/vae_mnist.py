@@ -58,7 +58,7 @@ class Dec(nn.Module):
         d = torch.sigmoid(p.view(*z.size()[:-1], *dataSize))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
 
-        return d, torch.tensor(0.1).to(z.device)  # mean, length scale
+        return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
 class MNIST(VAE):

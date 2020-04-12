@@ -72,7 +72,7 @@ class Dec(nn.Module):
         out = self.dec(z.view(-1, *z.size()[-3:]))
         out = out.view(*z.size()[:-3], *out.size()[1:])
         # consider also predicting the length scale
-        return out, torch.tensor(0.1).to(z.device)  # mean, length scale
+        return out, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
 class SVHN(VAE):

@@ -42,7 +42,7 @@ class MMVAE(nn.Module):
                     px_zs[e][d] = vae.px_z(*vae.dec(zs))
         return qz_xs, px_zs, zss
 
-    def generate(self, N, K):
+    def generate(self, N):
         self.eval()
         with torch.no_grad():
             data = []
@@ -50,8 +50,7 @@ class MMVAE(nn.Module):
             latents = pz.rsample(torch.Size([N]))
             for d, vae in enumerate(self.vaes):
                 px_z = vae.px_z(*vae.dec(latents))
-                gen = px_z.sample(torch.Size([K]))
-                data.append(gen.view(-1, *gen.size()[3:]))
+                data.append(px_z.mean.view(-1, *px_z.mean.size()[2:]))
         return data  # list of generations---one for each modality
 
     def reconstruct(self, data):

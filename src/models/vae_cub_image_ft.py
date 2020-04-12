@@ -56,15 +56,11 @@ class Dec(nn.Module):
             ))
         # relies on above terminating at n_c // 2
         self.fc31 = nn.Linear(n_c // 2, n_c)
-        self.fc32 = nn.Linear(n_c // 2, n_c)
 
     def forward(self, z):
         p = self.dec(z.view(-1, z.size(-1)))
         mean = self.fc31(p).view(*z.size()[:-1], -1)
-        std = self.fc32(p).view_as(mean)
-        return mean, torch.sigmoid(std) * 0.0001
-        # std = torch.tensor(self.std).to(mean.device)
-        # return mean, std
+        return mean, torch.tensor([0.01]).to(mean.device)
 
 
 class CUB_Image_ft(VAE):
@@ -92,7 +88,7 @@ class CUB_Image_ft(VAE):
     @property
     def pz_params(self):
         return self._pz_params[0], \
-            F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(1) + Constants.eta
+            F.softplus(self._pz_params[1]) + Constants.eta
 
     # remember that when combining with captions, this should be x10
     def getDataLoaders(self, batch_size, shuffle=True, device="cuda"):

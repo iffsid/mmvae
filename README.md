@@ -104,17 +104,22 @@ You can also play with the hyperparameters using arguments. Some of the more int
 - **`--latent-dimension`**: Latent dimension
 
 You can also load from pre-trained models by specifying the path to the model folder, for example `python --model mnist_svhn --pre-trained path/to/model/folder/`. See following for the flag we used for these pretrained models:
-- **MNIST-SVHN**: `K=50, batch_size=256, cuda=True, epochs=50, experiment='mnist_svhn', latent_dim=20, learn_prior=True, llik_scaling=1, logp=False, looser=True, model='mnist_svhn', no_analytics=False, no_cuda=False, num_hidden_layers=1, obj='dreg', pre_trained=None, print_freq=0, projection=''`
-- **CUB Image-Caption (feature)**: `K=50, batch_size=64, cuda=True, epochs=50, experiment='cubISft', latent_dim=64, learn_prior=True, llik_scaling=0.002, logp=False, looser=True, lr=0.0001, model='cubISft', no_analytics=True, no_cuda=False, num_hidden_layers=1, obj='dreg', std=0.0001`
-- **CUB Image-Caption (raw images)**: `K=50, batch_size=64, cuda=True, epochs=200, experiment='cubIS', latent_dim=128, learn_prior=True, llik_scaling=0.0, logp=False, looser=True, lr=0.0001, model='cubIS', no_analytics=True, no_cuda=False, num_hidden_layers=1, obj='dreg', std=0.001`
+- **MNIST-SVHN**: `--model mnist_svhn --obj dreg --K 30 --learn-prior --looser --epochs 30 --batch-size 128 --latent-dim 20`
+- **CUB Image-Caption (feature)**: `--model cubISft --learn-prior --K 50 --obj dreg --looser --epochs 50 --batch-size 64 --latent-dim 64 --llik_scaling 0.002`
+- **CUB Image-Caption (raw images)**: `--model cubIS --learn-prior --K 50 --obj dreg --looser --epochs 50 --batch-size 64 --latent-dim 64`
 
 ### Analysing
-We offer tools to reproduce the quantitative results in our paper in `src/report`. To run any of the provided script, `cd` into `src`, and
+We offer tools to reproduce the quantitative results in our paper in `src/report`. To run any of the provided scripts, `cd` into `src`, and
 
-- for likelihood estimation of data using trained model, run `python calculate_likelihoods.py --save-dir path/to/trained/model/folder/ --iwae-samples 1000`;
+- for likelihood estimation of data using a trained model, run `python calculate_likelihoods.py --save-dir path/to/trained/model/folder/ --iwae-samples 1000`;
 - for coherence analysis and latent digit classification accuracy on MNIST-SVHN dataset, run `python analyse_ms.py --save-dir path/to/trained/model/folder/`;
 - for coherence analysis on CUB image-caption dataset, run `python analyse_cub.py --save-dir path/to/trained/model/folder/`.
+    - _**Note**_: The learnt CCA projection matrix and FastText embeddings can vary quite a bit due to the limited dataset size, therefore re-computing them as part of the analyses can result in different numeric values including for the baseline. **The relative performance of our model against the baseline remains the same, just that the numbers can different.** 
+To produce similar results to what's reported in our paper, download the zip file [here](http://www.robots.ox.ac.uk/~yshi/mmdgm/pretrained_models/CCA_emb.zip) and do the following:
+        1. Move `cub.all`, `cub.emb`, `cub.pc` to under `data/cub/oc:3_sl:32_s:300_w:3/`;
+        2. Move the rest of the files, i.e. `emb_mean.pt`, `emb_proj.pt`, `images_mean.pt`, `im_proj.pt` to `path/to/trained/model/folder/`;
+        3. Set the `RESET` variable in `src/report/analyse_cub.py` to `False`.
 
 
 ## Contact
-If you have any question, feel free to create an issue or email Yuge Shi at yshi@robots.ox.ac.uk.
+If you have any questions, feel free to create an issue or email Yuge Shi at yshi@robots.ox.ac.uk.

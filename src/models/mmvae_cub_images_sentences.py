@@ -64,14 +64,13 @@ class CUB_Image_Sentence(MMVAE):
         return train_loader, test_loader
 
     def generate(self, runPath, epoch):
-        N, K = 8, 9
-        samples = super(CUB_Image_Sentence, self).generate(N, K)
-        images, captions = [sample.data.cpu().view(K, N, *sample.size()[1:]).transpose(0, 1) for sample in samples]
-        captions = [self._sent_preprocess(caption) for caption in captions]
+        N = 8
+        samples = super(CUB_Image_Sentence, self).generate(N)
+        images, captions = [sample.data.cpu() for sample in samples]
+        captions = self._sent_preprocess(captions)
         fig = plt.figure(figsize=(8, 6))
         for i, (image, caption) in enumerate(zip(images, captions)):
-            image = make_grid(image, nrow=int(sqrt(K)), padding=0)
-            fig = self._imshow(image, caption[0], i, fig, N)
+            fig = self._imshow(image, caption, i, fig, N)
 
         plt.savefig('{}/gen_samples_{:03d}.png'.format(runPath, epoch))
         plt.close()
